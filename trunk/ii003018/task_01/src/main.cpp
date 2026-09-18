@@ -17,11 +17,9 @@ class GeneralizedAutoregressiveLinearModel : public Model{
         double y_previous = 0;   // y(t - 1)
         double u_previous = 0; // u(t - 1)
     public:
-        GeneralizedAutoregressiveLinearModel(double a1, double a2, double b1, double b2){
-            a1 = a1; 
-            a2 = a2;
-            b1 = b1;
-            b2 = b2;
+        GeneralizedAutoregressiveLinearModel(double a1, double a2, double b1, double b2)
+        : a1(a1), a2(a2), b1(b1),b2(b2)
+        {
         }
 
         double nextStep(double u) override{
@@ -43,19 +41,17 @@ class GeneralizedAutoregressiveLinearModel : public Model{
 class  ActuatorSaturationNonLinearityModel : public Model{
     private:
         double a, b;
-        double Umin, Umax;
+        double uMin, uMax;
         double sat(double u){
-            if (u > Umax) return Umax;
-            else if (u < Umin) return Umin;
+            if (u > uMax) return uMax;
+            else if (u < uMin) return uMin;
             else return u;
         }
         double y = 0;
     public:
-    ActuatorSaturationNonLinearityModel(double a, double b, double uMin, double uMax){
-        a = a;
-        b = b;
-        uMin = uMin;
-        uMax = uMax;
+    ActuatorSaturationNonLinearityModel(double a, double b, double uMin, double uMax)
+    : a(a), b(b), uMin(uMin), uMax(uMax)
+    {
     }
     double nextStep(double u) override{
         y = a * y + b * sat(u);
@@ -77,10 +73,9 @@ class CubicGrowthAndControlModel : public Model{
         double y = 0;
 
     public:
-    CubicGrowthAndControlModel(double a, double b, double h){
-        a = a;
-        b = b;
-        h = h;
+    CubicGrowthAndControlModel(double a, double b, double h)
+    : a(a), b(b), h(h)
+    {
     }
 
     double nextStep(double u) override{
@@ -99,16 +94,17 @@ int main(){
     std::cout << " 1 - Model 1.8 (Generalized Autoregressive Linear Model)" << std::endl;
     std::cout << " 2 - Model 2.2 (Actuator Saturation Non-linearity)" << std::endl;
     std::cout << " 3 - Model 3.6 (Cubic Growth and Control)" << std::endl;
+    std::cout << " Your choice: ";
     int user_choice;
     std::cin >> user_choice;
-    std::cout << "Input number of steps (n):" << std::endl;
+    std::cout << "Input number of steps (n): ";
     int n;
     std::cin >> n;
 
     Model* model = nullptr;
     switch(user_choice){
         case 1:{
-            std::cout << "Model 1.8: y(t+1) = a1*y(t) + a2*y(t-1) + b1*u(t) + b2*u(t-1)\n";
+            std::cout << "Model 1.8: y(t+1) = a1*y(t) + a2*y(t-1) + b1*u(t) + b2*u(t-1)" << std::endl;
             double a1, a2, b1, b2;
             std::cout << "a1 = "; std::cin >> a1;
             std::cout << "a2 = "; std::cin >> a2;
@@ -118,7 +114,7 @@ int main(){
             break;
         }
         case 2:{
-            std::add_rvalue_reference_t << "Model 2.2: y(t+1) = a*y(t) + b*sat(u(t))" << std::endl;
+            std::cout << "Model 2.2: y(t+1) = a*y(t) + b*sat(u(t))" << std::endl;
             double a, b, uMin, uMax;
             std::cout << "a = "; std::cin >> a;
             std::cout << "b = "; std::cin >> b;
@@ -141,9 +137,13 @@ int main(){
         return 1;
         }   
     }
-    for(int i = 0; i < n; i++){
+    std::cout << "Input u (const): ";
+    double u;
+    std::cin >> u;
+    std::cout << std::endl;
+    for(int t = 0; t < n; t++){
         double y = model -> nextStep(u);
-        std::cout << "t = " << t << " u = " << u << " y = " << y << endl;
+        std::cout << "t = " << t << " u = " << u << " y = " << y << std::endl;
     }
     delete model ;
     return 0;
