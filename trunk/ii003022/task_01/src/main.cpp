@@ -1,5 +1,6 @@
 #include <iostream>
-
+#include <cmath>
+#include <iomanip>
 class Model{
     public:
         virtual ~Model() = default;
@@ -89,6 +90,15 @@ class CubicGrowthAndControlModel : public Model{
     }
 };
 
+double inputSignal(int t, int type, double ampl){
+    switch (type){
+    case 1: return ampl;
+    case 2: return (t == 0) ? ampl : 0;
+    case 3: return ampl * std::sin(t);
+    }
+    return 0;
+}
+
 int main(){
     std::cout << "Choose model:" << std::endl;
     std::cout << " 1 - Model 1.8 (Generalized Autoregressive Linear Model)" << std::endl;
@@ -137,14 +147,34 @@ int main(){
         return 1;
         }   
     }
-    std::cout << "Input u (const): ";
-    double u;
-    std::cin >> u;
+    std::cout << "Choose input signal u(t):" << std::endl;
+    std::cout << " 1 - step     (u - const)" << std::endl;
+    std::cout << " 2 - impulse  (u(0) = A, u(t > 0) = 0)" << std::endl;
+    std::cout << " 3 - harmonic (u = A * sin(t))" << std::endl;
+    int signal_type;
+    std::cin >> signal_type;
+    if(signal_type < 1 || signal_type > 3){
+        std::cout << "Wrong choise!";
+        delete model;
+        return 1;
+    }
+
+    std::cout << "Input amplitude A: ";
+    double amplitude;
+    std::cin >> amplitude;
     std::cout << std::endl;
+    std::cout << std::setw(5)  << "t"
+              << std::setw(15) << "u(t)"
+              << std::setw(15) << "y(t)" << std::endl;
+    std::cout << std::string(35, '-') << std::endl;
+
     for(int t = 0; t < n; t++){
+        double u = inputSignal(t, signal_type, amplitude);
         double y = model -> nextStep(u);
-        std::cout << "t = " << t << " u = " << u << " y = " << y << std::endl;
+        std::cout << std::setw(5)  << t
+                  << std::setw(15) << std::fixed << std::setprecision(4) << u
+                  << std::setw(15) << y << std::endl;
     }
     delete model ;
     return 0;
-}
+} 
