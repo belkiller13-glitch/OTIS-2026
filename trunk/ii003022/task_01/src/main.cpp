@@ -1,94 +1,12 @@
 #include <iostream>
 #include <cmath>
 #include <iomanip>
-class Model{
-    public:
-        virtual ~Model() = default;
-        virtual double nextStep(double u) = 0;
-        virtual void reset() = 0;
+#include <fstream>
 
-    };
-// Модель 1.8 - линейная
-// y(t+1) = a1*y(t) + a2*y(t-1) + b1*u(t) + b2*u(t-1)
-
-class GeneralizedAutoregressiveLinearModel : public Model{
-    private:
-        double a1, a2, b1, b2;
-        double y = 0;          // y(t)
-        double y_previous = 0;   // y(t - 1)
-        double u_previous = 0; // u(t - 1)
-    public:
-        GeneralizedAutoregressiveLinearModel(double a1, double a2, double b1, double b2)
-        : a1(a1), a2(a2), b1(b1),b2(b2)
-        {
-        }
-
-        double nextStep(double u) override{
-            double y_next = (a1 * y) + (a2 * y_previous) + (b1 * u) + (b2 * u_previous);
-            y_previous = y;
-            y = y_next;
-            u_previous = u;
-            return y_next;
-        }
-
-        void reset() override{
-            y = y_previous = u_previous = 0;
-        };
-};
-
-// Модель 2.2 - нелинейная 
-// y(t+1) = a*y(t) + b*sat(u(t))
-
-class  ActuatorSaturationNonLinearityModel : public Model{
-    private:
-        double a, b;
-        double uMin, uMax;
-        double sat(double u){
-            if (u > uMax) return uMax;
-            else if (u < uMin) return uMin;
-            else return u;
-        }
-        double y = 0;
-    public:
-    ActuatorSaturationNonLinearityModel(double a, double b, double uMin, double uMax)
-    : a(a), b(b), uMin(uMin), uMax(uMax)
-    {
-    }
-    double nextStep(double u) override{
-        y = a * y + b * sat(u);
-        return y;
-    }
-    void reset() override{
-        y = 0;
-    }
-};
-
-// Модель 3.6 - ДУ 
-// dy / dt = a*y^3 + b*u
-// y(t+1) = y(t) + h * (a*y(t)^3 + b*u(t))
-
-class CubicGrowthAndControlModel : public Model{
-    private:
-        double a, b;
-        double h;
-        double y = 0;
-
-    public:
-    CubicGrowthAndControlModel(double a, double b, double h)
-    : a(a), b(b), h(h)
-    {
-    }
-
-    double nextStep(double u) override{
-        double f = a * y * y * y + b * u;
-        y = y + h * f;
-        return y;
-    }
-
-    void reset() override{
-        y = 0;
-    }
-};
+#include "Model.h"   
+#include "Model 1.8.h"
+#include "Model 2.2.h"
+#include "Model 3.6.h"
 
 double inputSignal(int t, int type, double ampl){
     switch (type){
@@ -148,13 +66,13 @@ int main(){
         }   
     }
     std::cout << "Choose input signal u(t):" << std::endl;
-    std::cout << " 1 - step     (u - const)" << std::endl;
+    std::cout << " 1 - step     (u = const)" << std::endl;
     std::cout << " 2 - impulse  (u(0) = A, u(t > 0) = 0)" << std::endl;
     std::cout << " 3 - harmonic (u = A * sin(t))" << std::endl;
     int signal_type;
     std::cin >> signal_type;
     if(signal_type < 1 || signal_type > 3){
-        std::cout << "Wrong choise!";
+        std::cout << "Wrong choiсe!";
         delete model;
         return 1;
     }
@@ -168,13 +86,20 @@ int main(){
               << std::setw(15) << "y(t)" << std::endl;
     std::cout << std::string(35, '-') << std::endl;
 
+    std::ofstream file("result.csv");
+    file << "t;u;y" << std::endl;
+    file << std::fixed << std::setprecision(4);
+
     for(int t = 0; t < n; t++){
         double u = inputSignal(t, signal_type, amplitude);
         double y = model -> nextStep(u);
         std::cout << std::setw(5)  << t
                   << std::setw(15) << std::fixed << std::setprecision(4) << u
                   << std::setw(15) << y << std::endl;
+        file << t << ";" << u << ";" << y << std::endl;
     }
+    file.close();
+    std::cout << std::endl << "Data saved to result.csv" << std::endl;
     delete model ;
     return 0;
 } 
