@@ -30,8 +30,13 @@ echo ============================================
 echo  [4/4] Graph (python plot.py)
 echo ============================================
 python plot.py
-if %errorlevel% neq 0 (
-    echo  Python not found - graph skipped. Open result.csv in Excel.
+if exist result.csv (
+    python plot.py
+    if %errorlevel% neq 0 (
+        echo  Python not found - graph skipped. Open result.csv in Excel.
+    )
+) else (
+    echo  No simulation data - graph skipped.
 )
 
 echo.
