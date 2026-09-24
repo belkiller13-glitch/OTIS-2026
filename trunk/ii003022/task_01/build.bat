@@ -19,10 +19,10 @@ echo.
 echo ============================================
 echo  [3/3] Run program
 echo ============================================
-if exist build\Release\task1_ii003018.exe (
-    build\Release\task1_ii003018.exe
+if exist build\Release\task1_ii003022.exe (
+    build\Release\task1_ii003022.exe
 ) else (
-    build\task1_ii003018.exe
+    build\task1_ii003022.exe
 )
 
 echo.
