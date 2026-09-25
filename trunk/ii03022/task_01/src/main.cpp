@@ -108,7 +108,8 @@ int main(){
             std::cout << "Model 2.2: y(t+1) = a*y(t) + b*sat(u(t))" << std::endl;
             double a = checkInputDouble("a = ");
             double b = checkInputDouble("b = ");
-            double uMin, uMax;
+            double uMin;
+            double uMax;
             while(true){
                 uMin = checkInputDouble("uMin = ");
                 uMax = checkInputDouble("uMax = ");
