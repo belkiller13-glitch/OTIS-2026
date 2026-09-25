@@ -3,7 +3,10 @@
 
 class GeneralizedAutoregressiveLinearModel : public Model{
     private:
-        double a1, a2, b1, b2;
+        double a1;
+        double a2;
+        double b1;
+        double b2;
         double y = 0;          // y(t)
         double y_previous = 0;   // y(t - 1)
         double u_previous = 0; // u(t - 1)
@@ -22,6 +25,8 @@ class GeneralizedAutoregressiveLinearModel : public Model{
         }
 
         void reset() override{
-            y = y_previous = u_previous = 0;
+            y = 0;
+            u_previous = 0;
+            y_previous = 0;
         };
 };

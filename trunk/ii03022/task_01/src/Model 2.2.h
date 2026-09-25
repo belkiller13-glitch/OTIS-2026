@@ -3,9 +3,11 @@
 
 class  ActuatorSaturationNonLinearityModel : public Model{
     private:
-        double a, b;
-        double uMin, uMax;
-        double sat(double u){
+        double a;
+        double b;
+        double uMax;
+        double uMin;
+        double sat(double u) const{
             if (u > uMax) return uMax;
             else if (u < uMin) return uMin;
             else return u;

@@ -3,7 +3,8 @@
 
 class CubicGrowthAndControlModel : public Model{
     private:
-        double a, b;
+        double a;
+        double b;
         double h;
         double y = 0;
 

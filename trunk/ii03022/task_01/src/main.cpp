@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cstdio> 
+#include <memory>
 
 #include "Model.h"   
 #include "Model 1.8.h"
@@ -14,6 +15,7 @@ double inputSignal(int t, int type, double ampl){
     case 1: return ampl;
     case 2: return (t == 0) ? ampl : 0;
     case 3: return ampl * std::sin(t);
+    default: return 0;
     }
     return 0;
 }
@@ -41,7 +43,8 @@ int checkInputInt(const std::string& text, int minVal, int maxVal){
 
 bool isStable(double a1, double a2){
     double D = a1 * a1 + 4.0 * a2;        
-    double absZ1, absZ2;                   
+    double absZ1;
+    double absZ2;                   
 
     std::cout << std::fixed << std::setprecision(4);
     if (D >= 0){                           
@@ -53,7 +56,9 @@ bool isStable(double a1, double a2){
     } else {                               
         double re = a1 / 2.0;
         double im = std::sqrt(-D) / 2.0;
-        absZ1 = absZ2 = std::sqrt(re * re + im * im);   
+        absZ1 = std::sqrt(re * re + im * im);
+        absZ2 = std::sqrt(re * re + im * im);   
+
         std::cout << "  Roots: z1 = " << re << " + j" << im
                   << ", z2 = " << re << " - j" << im << std::endl;
     }
@@ -73,7 +78,7 @@ int main(){
     
     int n = checkInputInt("Input number of steps (n): ", 1, 100000);
     
-    Model* model = nullptr;
+    std::unique_ptr<Model> model;
     switch(user_choice){
         case 1:{
             std::cout << "Model 1.8: y(t+1) = a1*y(t) + a2*y(t-1) + b1*u(t) + b2*u(t-1)" << std::endl;
@@ -81,7 +86,7 @@ int main(){
             double a2 = checkInputDouble("a2 = ");
             double b1 = checkInputDouble("b1 = ");
             double b2 = checkInputDouble("b2 = ");
-            model = new GeneralizedAutoregressiveLinearModel(a1, a2, b1, b2);
+            model = std::make_unique<GeneralizedAutoregressiveLinearModel>(a1, a2, b1, b2);
             std::cout << std::endl;
             std::cout << "Stability check: z^2 - (" << a1 << ")*z - ("
                       << a2 << ") = 0" << std::endl;
@@ -110,7 +115,7 @@ int main(){
                 if (uMin < uMax) break;
                 std::cout << "uMin must be less than uMax! Enter another numbers." << std::endl;
             }
-            model = new ActuatorSaturationNonLinearityModel(a, b, uMin, uMax);
+            model = std::make_unique<ActuatorSaturationNonLinearityModel>(a, b, uMin, uMax);
             break;
         }
         case 3:{
@@ -121,11 +126,12 @@ int main(){
             while (true){
                 h = checkInputDouble("h (time step) = ");
                 if (h > 0) break;
-                    std::cout << "h must be positive!" << std::endl;
+                std::cout << "h must be positive!" << std::endl;
             }
-            model = new CubicGrowthAndControlModel(a, b, h);
+            model = std::make_unique<CubicGrowthAndControlModel>(a, b, h);
             break;
         }
+        default: return 0;
     }
     
     std::cout << "Choose input signal u(t):" << std::endl;
@@ -145,7 +151,6 @@ int main(){
     std::ofstream file("result.csv");   
         if (!file){                        
             std::cout << "Error: cannot create result.csv" << std::endl;
-            delete model;
             return 1;
         }
     
@@ -162,6 +167,5 @@ int main(){
     }
     file.close();
     std::cout << std::endl << "Data saved to result.csv" << std::endl;
-    delete model;
     return 0;
 } 
